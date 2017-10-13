@@ -1,2 +1,2 @@
 # HS3-Towers
-An original boardgame
+Like simplified chess, but with towers.
