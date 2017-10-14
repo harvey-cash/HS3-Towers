@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Unit {
+public abstract class Unit : MonoBehaviour {
 
     public enum UNIT_TYPES { CUBE, PYRAMID };
 

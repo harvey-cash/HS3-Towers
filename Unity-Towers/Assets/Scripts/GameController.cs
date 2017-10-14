@@ -5,8 +5,9 @@ using UnityEngine;
 public class GameController : MonoBehaviour {
 
     private bool debug = true;
-    
-	void Start () {
+    GameObject unitFolder;
+
+    void Start () {
         SetToDefaults();
         /* Create GUI and everything */
         BeginNewGame();        
@@ -40,14 +41,13 @@ public class GameController : MonoBehaviour {
         Player[] players = CreatePlayers();
         if (debug) { Debug.Log(players.ToString()); }
 
+        unitFolder = new GameObject("Unit Folder");
+
         Grid[,] grids = CreateGrids();
         if (debug) { Debug.Log(grids.ToString()); }
 
         BoardState board = new BoardState(grids, Player.TEAM.ZERO);
         if (debug) { Debug.Log(board.ToString()); }
-
-        ObjectController animator = new ObjectController(board);
-        animator.DrawGrids();
 
         return true;
     }
@@ -59,12 +59,17 @@ public class GameController : MonoBehaviour {
         }
         return players;
     }
-
+    
     private Grid[,] CreateGrids() {
         Grid[,] grids = new Grid[(int)boardDimensions.x, (int)boardDimensions.y];
         for (int x = 0; x < boardDimensions.x; x++) {
             for (int y = 0; y < boardDimensions.y; y++) {
-                Grid grid = new Grid(new Vector2(x, y));
+                GameObject tile = (GameObject)Instantiate(Resources.Load("Grid"));
+                Grid grid = tile.AddComponent<Grid>();
+                grid.InitGrid(new Vector2(x, y));
+
+                tile.transform.parent = unitFolder.transform;
+                tile.transform.position = new Vector3(x, -(0.5f * tile.transform.localScale.y), y);
                 grids[x, y] = grid;
             }
         }
