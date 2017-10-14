@@ -31,7 +31,12 @@ public class Grid : MonoBehaviour {
 
 
     private void OnMouseEnter() {
-        GetComponent<Renderer>().material.color = Color.grey;
+        if (controller.ValidMove(this)) {
+            GetComponent<Renderer>().material.color = Color.cyan;
+        } else {
+            GetComponent<Renderer>().material.color = Color.grey;
+        }
+        
     }
     private void OnMouseExit() {
         GetComponent<Renderer>().material.color = Color.white;

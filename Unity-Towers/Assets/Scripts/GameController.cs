@@ -169,7 +169,6 @@ public class GameController : MonoBehaviour {
         //CAN MOVE INTO EMPTY GRIDS        
         else if (targetGrid.GetActiveUnit() == null) {
             MoveUnitToGrid(board.GetGrids(), selectedUnit, targetGrid);
-            if (debug) { Debug.Log("Moved selected unit to: " + targetGrid.GetCoords().ToString()); }
         }
 
         //MOVING ONTO A FRIENDLY
@@ -178,23 +177,24 @@ public class GameController : MonoBehaviour {
                 if (debug) { Debug.Log("You can't move onto a friendly pyramid"); }
             } else {
                 MoveUnitToGrid(board.GetGrids(), selectedUnit, targetGrid);
-                if (debug) { Debug.Log("Moving to a friendy cube"); }
             }
         }
 
         //MOVING ONTO AN ENEMY
         else {
             MoveUnitToGrid(board.GetGrids(), selectedUnit, targetGrid);
-            Debug.Log(selectedUnit.GetTeam().ToString() + " and " + targetGrid.GetActiveUnit().GetTeam().ToString());
-
-            if (debug) { Debug.Log("Moving to an enemy unit"); }
         }
     }
 
     private void MoveUnitToGrid(Grid[,] gridArray, Unit selectedUnit, Grid targetGrid) {
+        if(!ValidMove(targetGrid)) {
+            if (debug) { Debug.Log("Move is invalid!"); }
+            return;
+        }
+
         gridArray = MoveOffGrid(gridArray, selectedUnit, targetGrid);
 
-        /* ~~~~~~~ STACK ~~~~~~~~ */
+        /* ~~~~~~~ STACK / MOVE TO EMPTY ~~~~~~~~ */
         if (targetGrid.GetActiveUnit() == null || targetGrid.GetActiveUnit().GetTeam().Equals(selectedUnit.GetTeam())) {
             
             Unit[] moreOccupants = new Unit[targetGrid.GetOccupants().Length + 1];
@@ -237,10 +237,38 @@ public class GameController : MonoBehaviour {
         /* REMOVE UNIT FROM GRID */
         Unit[] fewerOccupants = new Unit[selectedUnit.GetGrid().GetOccupants().Length - 1];
         for (int i = 0; i < selectedUnit.GetGrid().GetOccupants().Length - 1; i++) {
-            Debug.Log(selectedUnit.GetGrid().GetOccupants()[i]);
             fewerOccupants[i] = selectedUnit.GetGrid().GetOccupants()[i];
         }
         selectedUnit.GetGrid().SetOccupants(fewerOccupants);
         return gridArray;
+    }
+
+    public bool ValidMove(Grid targetGrid) {
+        if (board.GetSelectedUnit() == null) {
+            return false;
+        }
+        else {
+            Grid originGrid = board.GetSelectedUnit().GetGrid();
+            Vector2 move = targetGrid.GetCoords() - originGrid.GetCoords();
+            int distance = Mathf.RoundToInt(Mathf.Sqrt(Vector2.SqrMagnitude(move)));
+
+            if(board.GetSelectedUnit().GetComponent<Cube>() != null && distance > 1) {
+                return false;
+            }
+
+            //For moves parallel to the edges
+            if ((move.x == 0 || move.y == 0) && distance <= originGrid.GetOccupants().Length) {
+                return true;
+            }
+            //For moves diagonal
+            else if ((Mathf.Abs(move.x) == Mathf.Abs(move.y)) && distance <= Mathf.Abs(move.x)) {
+                return true;
+            } 
+            
+            else {
+                return false;
+            }
+
+        }
     }
 }
