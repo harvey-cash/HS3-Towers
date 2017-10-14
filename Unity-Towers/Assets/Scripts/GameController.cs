@@ -6,6 +6,7 @@ public class GameController : MonoBehaviour {
 
     private bool debug = true;
     GameObject unitFolder;
+    BoardState board;
 
     void Start () {
         SetToDefaults();
@@ -35,7 +36,7 @@ public class GameController : MonoBehaviour {
 
 
     /* ~~~~~~~~~~~~~~~~~~~~~ INITIALISE GAME ~~~~~~~~~~~~~~~~~~~~~ */
-    private bool BeginNewGame() {
+    private void BeginNewGame() {
         if (debug) { Debug.Log("Starting New Game"); }
 
         Player[] players = CreatePlayers();
@@ -43,9 +44,9 @@ public class GameController : MonoBehaviour {
         Grid[,] grids = CreateGrids();
         grids = PopulateWithUnits(grids);
 
-        BoardState board = new BoardState(grids, Player.TEAM.ZERO);
+        board = new BoardState(grids, Player.TEAM.ZERO, null);
 
-        return true;
+        PlayGame(board, players);
     }
 
     private Player[] CreatePlayers() {
@@ -63,6 +64,7 @@ public class GameController : MonoBehaviour {
                 GameObject tile = (GameObject)Instantiate(Resources.Load("Grid"));
                 Grid grid = tile.AddComponent<Grid>();
                 grid.InitGrid(new Vector2(x, y));
+                grid.SetController(this);
 
                 tile.transform.parent = unitFolder.transform;
                 tile.transform.position = new Vector3(x, -(0.5f * tile.transform.localScale.y), y);
@@ -81,18 +83,22 @@ public class GameController : MonoBehaviour {
         for (int x = 1; x < end; x++) {
             occupants = new Unit[1];
             occupants[0] = NewUnit(Unit.UNIT_TYPES.CUBE, Player.TEAM.ZERO, new Vector2(x, 0));
+            occupants[0].SetGrid(grids[x, 0]);
             grids[x, 0].SetOccupants(occupants);
 
             occupants = new Unit[1];
             occupants[0] = NewUnit(Unit.UNIT_TYPES.PYRAMID, Player.TEAM.ZERO, new Vector2(x, 1));
+            occupants[0].SetGrid(grids[x, 1]);
             grids[x, 1].SetOccupants(occupants);
 
             occupants = new Unit[1];
             occupants[0] = NewUnit(Unit.UNIT_TYPES.PYRAMID, Player.TEAM.ONE, new Vector2(x, otherSide - 1));
+            occupants[0].SetGrid(grids[x, otherSide - 1]);
             grids[x, otherSide - 1].SetOccupants(occupants);
 
             occupants = new Unit[1];
             occupants[0] = NewUnit(Unit.UNIT_TYPES.CUBE, Player.TEAM.ONE, new Vector2(x, otherSide));
+            occupants[0].SetGrid(grids[x, otherSide]);
             grids[x, otherSide].SetOccupants(occupants);
         }
 
@@ -119,10 +125,73 @@ public class GameController : MonoBehaviour {
                 break;
         }
         unit.SetTeam(team);
+        unit.SetController(this);
+
         unitObject.transform.parent = unitFolder.transform;
         unitObject.transform.position = new Vector3(coords.x, (0.5f * unitObject.transform.localScale.y), coords.y);
         unitObject.GetComponent<Renderer>().material.color = Player.TeamColour(team, false);
         
         return unit;
+    }
+
+
+    /* ~~~~~~~~~~~~~~~~~~~~~ PLAY GAME ~~~~~~~~~~~~~~~~~~~~~ */
+    private void PlayGame(BoardState board, Player[] players) {
+        
+    }
+
+    public void OnUnitClick(Unit unit) {
+        if (board.GetSelectedUnit() == null) {
+            Unit selected = unit.GetGrid().GetOccupants()[unit.GetGrid().GetOccupants().Length - 1];
+            if (debug) { Debug.Log("Selected unit: " + selected.GetGrid().GetCoords().ToString()); }
+            board = new BoardState(board.GetGrids(), board.GetTurnOf(), selected);
+        } 
+        else if (unit.GetGrid().Equals(board.GetSelectedUnit().GetGrid())) {
+            if (debug) { Debug.Log("You can't move to the same grid."); }
+        } 
+        else if (unit.GetComponent<Cube>() != null) {
+            Grid[,] newGrids = MoveUnitToGrid(board.GetGrids(), board.GetSelectedUnit(), unit.GetGrid());
+            if (debug) { Debug.Log("Moved selected unit to: " + unit.GetGrid().GetCoords().ToString()); }
+            board = new BoardState(newGrids, board.GetTurnOf(), null);
+
+        }
+    }
+    public void OnGridClick(Grid grid) {
+        if (board.GetSelectedUnit() != null) {
+            Grid[,] newGrids = MoveUnitToGrid(board.GetGrids(), board.GetSelectedUnit(), grid);
+            if (debug) { Debug.Log("Moved selected unit to: " + board.GetSelectedUnit().GetGrid().GetCoords().ToString()); }
+            board = new BoardState(newGrids, board.GetTurnOf(), null);
+            
+        }
+    }
+    /*
+    private void AttemptMove(Unit unit, Grid grid) {
+
+    }
+    */
+
+    private Grid[,] MoveUnitToGrid(Grid[,] gridArray, Unit unit, Grid grid) {
+
+        /* REMOVE UNIT FROM GRID */
+        Unit[] fewerOccupants = new Unit[unit.GetGrid().GetOccupants().Length - 1];
+        for(int i = 0; i < unit.GetGrid().GetOccupants().Length - 1; i++) {
+            Debug.Log(unit.GetGrid().GetOccupants()[i]);
+            fewerOccupants[i] = unit.GetGrid().GetOccupants()[i];
+        }
+        unit.GetGrid().SetOccupants(fewerOccupants);
+
+        /* MOVE UNIT TO NEW GRID */
+        Unit[] moreOccupants = new Unit[grid.GetOccupants().Length + 1];
+        for(int i = 0; i < grid.GetOccupants().Length; i++) {
+            moreOccupants[i] = grid.GetOccupants()[i];
+        }
+        moreOccupants[moreOccupants.Length - 1] = unit;
+
+        unit.transform.position = new Vector3(grid.GetCoords().x, grid.GetOccupants().Length + (0.5f * unit.transform.localScale.y), grid.GetCoords().y);
+
+        grid.SetOccupants(moreOccupants);
+        unit.SetGrid(grid);
+
+        return gridArray;
     }
 }

@@ -4,6 +4,11 @@ using UnityEngine;
 
 public class Grid : MonoBehaviour {
 
+    private GameController controller;
+    public void SetController(GameController controller) {
+        this.controller = controller;
+    }
+
     private Vector2 coords;
     public Vector2 GetCoords() { return coords; }
 
@@ -23,9 +28,6 @@ public class Grid : MonoBehaviour {
         this.coords = coords;
         this.occupants = occupants;
     }
-    public Vector2 GetID() {
-        return coords;
-    }
 
 
     private void OnMouseEnter() {
@@ -35,6 +37,7 @@ public class Grid : MonoBehaviour {
         GetComponent<Renderer>().material.color = Color.white;
     }
     private void OnMouseUp() {
-        Debug.Log("Mouse selected: " + coords.ToString());
+        controller.OnGridClick(this);
     }
 }
+

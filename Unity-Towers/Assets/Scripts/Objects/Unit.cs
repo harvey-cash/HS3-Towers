@@ -4,6 +4,17 @@ using UnityEngine;
 
 public abstract class Unit : MonoBehaviour {
 
+    private GameController controller;
+    public void SetController(GameController controller) {
+        this.controller = controller;
+    }
+
+    protected Grid occupiedGrid;
+    public void SetGrid(Grid occupiedGrid) {
+        this.occupiedGrid = occupiedGrid;
+    }
+    public Grid GetGrid() { return occupiedGrid; }
+
     public enum UNIT_TYPES { CUBE, PYRAMID };
 
     protected Player.TEAM team;
@@ -15,10 +26,19 @@ public abstract class Unit : MonoBehaviour {
     }
 
     private void OnMouseEnter() {
-        GetComponent<Renderer>().material.color = Player.TeamColour(team, true);
+        foreach(Unit unit in occupiedGrid.GetOccupants()) {
+            unit.GetComponent<Renderer>().material.color = Player.TeamColour(team, true);
+        }
+        
     }
     private void OnMouseExit() {
-        GetComponent<Renderer>().material.color = Player.TeamColour(team, false);
+        foreach (Unit unit in occupiedGrid.GetOccupants()) {
+            unit.GetComponent<Renderer>().material.color = Player.TeamColour(team, false);
+        }
+    }
+
+    private void OnMouseUp() {
+        controller.OnUnitClick(this);
     }
 
 }
