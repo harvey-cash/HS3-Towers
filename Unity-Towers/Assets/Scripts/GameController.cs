@@ -10,30 +10,41 @@ public class GameController : MonoBehaviour {
         BeginNewGame();
 	}
 
-    public enum UNIT_TYPES { CUBE, PYRAMID };
-
-    /* SETTINGS */
-    private int playerCount, cubeCount, pyramidCount;
+    /* ~~~~~~~~~~~~~~~~~~~~~ SETTINGS ~~~~~~~~~~~~~~~~~~~~~ */
+    private List<Player.PLAYER_TYPES> playerTypes = new List<Player.PLAYER_TYPES>();
+    private int cubeCount, pyramidCount;
     private Vector2 boardDimensions;
     public void SetToDefaults() {
-        playerCount = 2;
+        playerTypes.Add(Player.PLAYER_TYPES.HUMAN);
+        playerTypes.Add(Player.PLAYER_TYPES.HUMAN);
+
         cubeCount = 3;
         pyramidCount = 3;
         boardDimensions = new Vector2(7, 7);
     }
-    public bool ChangeSettings(int playerCount, Vector2 boardDimensions, int cubeCount, int pyramidCount) {
-        this.playerCount = playerCount;
+    public bool ChangeSettings(List<Player.PLAYER_TYPES> playerTypes, Vector2 boardDimensions, int cubeCount, int pyramidCount) {
+        this.playerTypes = playerTypes;
         this.boardDimensions = boardDimensions;
         this.cubeCount = cubeCount;
         this.pyramidCount = pyramidCount;
         return true;
-    }    
+    }
 
-    /* INITIALISE GAME */
+
+    /* ~~~~~~~~~~~~~~~~~~~~~ INITIALISE GAME ~~~~~~~~~~~~~~~~~~~~~ */
     private bool BeginNewGame() {
+        Player[] players = CreatePlayers();
         Grid[,] grids = CreateGrids();
-        BoardState board = new BoardState(grids, BoardState.PLAYER.ZERO);
+        BoardState board = new BoardState(grids, Player.TEAM.ZERO);
         return true;
+    }
+
+    private Player[] CreatePlayers() {
+        Player[] players = new Player[playerTypes.Count];
+        for (int i = 0; i < playerTypes.Count; i++) {
+            players[i] = new HumanPlayer(i);
+        }
+        return players;
     }
 
     private Grid[,] CreateGrids() {
@@ -48,8 +59,10 @@ public class GameController : MonoBehaviour {
         return new Grid[(int)boardDimensions.x, (int)boardDimensions.y];
     }
 
-    private Unit[] GetNewUnit(UNIT_TYPES type) {
-        Unit unit;
-        return new Unit[1];
+    private Unit[] NewUnitArray(Unit.UNIT_TYPES type, Player.TEAM team) {
+        Unit unit = Unit.NewUnit(type, team);
+        Unit[] unitArray = new Unit[1];
+        unitArray[0] = unit;
+        return unitArray;
     }
 }

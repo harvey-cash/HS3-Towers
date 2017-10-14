@@ -4,11 +4,10 @@ using UnityEngine;
 
 public class BoardState : MonoBehaviour {
 
-    private Grid[,] board;
-    public enum PLAYER { ZERO, ONE };
-    private PLAYER turnOf;
+    private Grid[,] board;    
+    private Player.TEAM turnOf;
 
-    public BoardState(Grid[,] board, PLAYER turnOf) {
+    public BoardState(Grid[,] board, Player.TEAM turnOf) {
         this.board = board;
         this.turnOf = turnOf;
     }

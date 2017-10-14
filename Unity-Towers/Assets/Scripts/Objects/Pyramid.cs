@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Pyramid : Unit {
 
-    public Pyramid(BoardState.PLAYER team) {
+    public Pyramid(Player.TEAM team) {
         this.team = team;
     }
 }
