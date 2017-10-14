@@ -31,13 +31,17 @@ public class Grid : MonoBehaviour {
 
 
     private void OnMouseEnter() {
-        GetComponent<Renderer>().material.color = Color.blue;
+        GetComponent<Renderer>().material.color = Color.grey;
     }
     private void OnMouseExit() {
         GetComponent<Renderer>().material.color = Color.white;
     }
     private void OnMouseUp() {
         controller.OnGridClick(this);
+    }
+
+    public Unit GetActiveUnit() {
+        if (occupants.Length > 0) { return occupants[occupants.Length - 1]; } else { return null; }
     }
 }
 
