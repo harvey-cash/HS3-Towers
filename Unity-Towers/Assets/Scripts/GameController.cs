@@ -23,7 +23,7 @@ public class GameController : MonoBehaviour {
 
         cubeCount = 3;
         pyramidCount = 3;
-        boardDimensions = new Vector2(7, 7);
+        boardDimensions = new Vector2(7, 9);
     }
     public bool ChangeSettings(List<Player.PLAYER_TYPES> playerTypes, Vector2 boardDimensions, int cubeCount, int pyramidCount) {
         this.playerTypes = playerTypes;
@@ -39,15 +39,11 @@ public class GameController : MonoBehaviour {
         if (debug) { Debug.Log("Starting New Game"); }
 
         Player[] players = CreatePlayers();
-        if (debug) { Debug.Log(players.ToString()); }
-
         unitFolder = new GameObject("Unit Folder");
-
         Grid[,] grids = CreateGrids();
-        if (debug) { Debug.Log(grids.ToString()); }
+        grids = PopulateWithUnits(grids);
 
         BoardState board = new BoardState(grids, Player.TEAM.ZERO);
-        if (debug) { Debug.Log(board.ToString()); }
 
         return true;
     }
@@ -77,10 +73,55 @@ public class GameController : MonoBehaviour {
         return grids;
     }
 
-    private Unit[] NewUnitArray(Unit.UNIT_TYPES type, Player.TEAM team) {
-        Unit unit = Unit.NewUnit(type, team);
-        Unit[] unitArray = new Unit[1];
-        unitArray[0] = unit;
-        return unitArray;
+    private Grid[,] PopulateWithUnits(Grid[,] grids) {
+        int otherSide = grids.GetLength(1) - 1;
+        int end = grids.GetLength(0) - 1;
+
+        Unit[] occupants;
+        for (int x = 1; x < end; x++) {
+            occupants = new Unit[1];
+            occupants[0] = NewUnit(Unit.UNIT_TYPES.CUBE, Player.TEAM.ZERO, new Vector2(x, 0));
+            grids[x, 0].SetOccupants(occupants);
+
+            occupants = new Unit[1];
+            occupants[0] = NewUnit(Unit.UNIT_TYPES.PYRAMID, Player.TEAM.ZERO, new Vector2(x, 1));
+            grids[x, 1].SetOccupants(occupants);
+
+            occupants = new Unit[1];
+            occupants[0] = NewUnit(Unit.UNIT_TYPES.PYRAMID, Player.TEAM.ONE, new Vector2(x, otherSide - 1));
+            grids[x, otherSide - 1].SetOccupants(occupants);
+
+            occupants = new Unit[1];
+            occupants[0] = NewUnit(Unit.UNIT_TYPES.CUBE, Player.TEAM.ONE, new Vector2(x, otherSide));
+            grids[x, otherSide].SetOccupants(occupants);
+        }
+
+
+        return grids;
+    }
+
+    private Unit NewUnit(Unit.UNIT_TYPES type, Player.TEAM team, Vector2 coords) {
+        GameObject unitObject;
+        Unit unit;
+        switch (type) {
+            case Unit.UNIT_TYPES.CUBE:
+                unitObject = (GameObject)Instantiate(Resources.Load("Cube"));
+                unit = unitObject.AddComponent<Cube>();
+                break;
+            case Unit.UNIT_TYPES.PYRAMID:
+                unitObject = (GameObject)Instantiate(Resources.Load("Pyramid"));
+                unit = unitObject.AddComponent<Pyramid>();
+                break;
+
+            default:
+                unitObject = (GameObject)Instantiate(Resources.Load("Cube"));
+                unit = unitObject.AddComponent<Cube>();
+                break;
+        }
+        unit.SetTeam(team);
+        unitObject.transform.parent = unitFolder.transform;
+        unitObject.transform.position = new Vector3(coords.x, (0.5f * unitObject.transform.localScale.y), coords.y);
+        
+        return unit;
     }
 }

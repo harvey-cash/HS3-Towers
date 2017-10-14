@@ -6,7 +6,14 @@ public class Grid : MonoBehaviour {
 
     private Vector2 coords;
     public Vector2 GetCoords() { return coords; }
+
     private Unit[] occupants;
+    public void SetOccupants(Unit[] occupants) {
+        this.occupants = occupants;
+    }
+    public Unit[] GetOccupants() {
+        return occupants;
+    }
 
     public void InitGrid(Vector2 coords) {
         this.coords = coords;
@@ -18,16 +25,16 @@ public class Grid : MonoBehaviour {
     }
     public Vector2 GetID() {
         return coords;
-    }    
-
-    public bool MoveHere(Unit unit) {
-        return false;
     }
+
 
     private void OnMouseEnter() {
         GetComponent<Renderer>().material.color = Color.blue;
     }
     private void OnMouseExit() {
         GetComponent<Renderer>().material.color = Color.white;
+    }
+    private void OnMouseUp() {
+        Debug.Log("Mouse selected: " + coords.ToString());
     }
 }

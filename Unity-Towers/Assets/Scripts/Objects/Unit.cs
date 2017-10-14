@@ -7,17 +7,18 @@ public abstract class Unit : MonoBehaviour {
     public enum UNIT_TYPES { CUBE, PYRAMID };
 
     protected Player.TEAM team;
+    public void SetTeam(Player.TEAM team) {
+        this.team = team;
+    }
     public Player.TEAM GetTeam() {
         return team;
     }
 
-    public static Unit NewUnit(UNIT_TYPES type, Player.TEAM team) {
-        switch(type) {
-            case UNIT_TYPES.CUBE: return new Cube(team);
-            case UNIT_TYPES.PYRAMID: return new Pyramid(team);
-
-            default: return new Cube(team);
-        }
+    private void OnMouseEnter() {
+        GetComponent<Renderer>().material.color = Player.TeamColour(team);
+    }
+    private void OnMouseExit() {
+        GetComponent<Renderer>().material.color = Color.white;
     }
 
 }
