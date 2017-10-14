@@ -28,19 +28,26 @@ public class Grid : MonoBehaviour {
         this.coords = coords;
         this.occupants = occupants;
     }
-
-
+    
     private void OnMouseEnter() {
-        if (controller.ValidMove(this)) {
+        if (controller.GetValidGrids(this).valid) {
+            /*
+            foreach (Grid grid in controller.GetValidGrids(this).validGrids) {
+                grid.GetComponent<Renderer>().material.color = Color.cyan;
+            }
+            */
             GetComponent<Renderer>().material.color = Color.cyan;
         } else {
             GetComponent<Renderer>().material.color = Color.grey;
-        }
-        
+        }        
     }
     private void OnMouseExit() {
+        DeselectColour();
+    }
+    public void DeselectColour() {
         GetComponent<Renderer>().material.color = Color.white;
     }
+
     private void OnMouseUp() {
         controller.OnGridClick(this);
     }

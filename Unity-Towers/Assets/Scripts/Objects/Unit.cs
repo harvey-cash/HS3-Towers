@@ -16,6 +16,7 @@ public abstract class Unit : MonoBehaviour {
     public Grid GetGrid() { return occupiedGrid; }
 
     public enum UNIT_TYPES { CUBE, PYRAMID };
+    public abstract UNIT_TYPES GetUnitType();
 
     protected Player.TEAM team;
     public void SetTeam(Player.TEAM team) {
