@@ -15,10 +15,10 @@ public abstract class Unit : MonoBehaviour {
     }
 
     private void OnMouseEnter() {
-        GetComponent<Renderer>().material.color = Player.TeamColour(team);
+        GetComponent<Renderer>().material.color = Player.TeamColour(team, true);
     }
     private void OnMouseExit() {
-        GetComponent<Renderer>().material.color = Color.white;
+        GetComponent<Renderer>().material.color = Player.TeamColour(team, false);
     }
 
 }

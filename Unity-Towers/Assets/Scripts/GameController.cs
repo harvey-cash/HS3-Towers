@@ -121,6 +121,7 @@ public class GameController : MonoBehaviour {
         unit.SetTeam(team);
         unitObject.transform.parent = unitFolder.transform;
         unitObject.transform.position = new Vector3(coords.x, (0.5f * unitObject.transform.localScale.y), coords.y);
+        unitObject.GetComponent<Renderer>().material.color = Player.TeamColour(team, false);
         
         return unit;
     }
