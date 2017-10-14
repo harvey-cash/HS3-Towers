@@ -5,6 +5,7 @@ using UnityEngine;
 public class Grid {
 
     private Vector2 coords;
+    public Vector2 GetCoords() { return coords; }
     private Unit[] occupants;
 
     public Grid(Vector2 coords) {

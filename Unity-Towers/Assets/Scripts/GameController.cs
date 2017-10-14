@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class GameController : MonoBehaviour {
+
+    private bool debug = true;
     
 	void Start () {
         SetToDefaults();
         /* Create GUI and everything */
-        BeginNewGame();
+        BeginNewGame();        
 	}
 
     /* ~~~~~~~~~~~~~~~~~~~~~ SETTINGS ~~~~~~~~~~~~~~~~~~~~~ */
@@ -33,9 +35,20 @@ public class GameController : MonoBehaviour {
 
     /* ~~~~~~~~~~~~~~~~~~~~~ INITIALISE GAME ~~~~~~~~~~~~~~~~~~~~~ */
     private bool BeginNewGame() {
+        if (debug) { Debug.Log("Starting New Game"); }
+
         Player[] players = CreatePlayers();
+        if (debug) { Debug.Log(players.ToString()); }
+
         Grid[,] grids = CreateGrids();
+        if (debug) { Debug.Log(grids.ToString()); }
+
         BoardState board = new BoardState(grids, Player.TEAM.ZERO);
+        if (debug) { Debug.Log(board.ToString()); }
+
+        ObjectController animator = new ObjectController(board);
+        animator.DrawGrids();
+
         return true;
     }
 
@@ -50,13 +63,13 @@ public class GameController : MonoBehaviour {
     private Grid[,] CreateGrids() {
         Grid[,] grids = new Grid[(int)boardDimensions.x, (int)boardDimensions.y];
         for (int x = 0; x < boardDimensions.x; x++) {
-            for (int y = 0; x < boardDimensions.y; y++) {
+            for (int y = 0; y < boardDimensions.y; y++) {
                 Grid grid = new Grid(new Vector2(x, y));
                 grids[x, y] = grid;
             }
         }
 
-        return new Grid[(int)boardDimensions.x, (int)boardDimensions.y];
+        return grids;
     }
 
     private Unit[] NewUnitArray(Unit.UNIT_TYPES type, Player.TEAM team) {
