@@ -8,14 +8,19 @@ public abstract class Player {
 	public enum TEAM { ZERO, ONE };
     public enum PLAYER_TYPES { HUMAN };
 
+    protected GameController controller;
+    public void SetGameController(GameController controller) {
+        this.controller = controller;
+    }
+
     public static Color TeamColour(TEAM team, bool highlight) {
         switch(team) {
             case TEAM.ZERO:
                 if(highlight) { return Color.red; }
-                else { return new Color(1, 0.2f, 0.2f, 1); }
+                else { return new Color(1, 0.4f, 0.4f, 1); }
             case TEAM.ONE:
                 if (highlight) { return Color.green; } 
-                else { return new Color(0.2f, 1, 0.2f, 1); }
+                else { return new Color(0.4f, 1, 0.4f, 1); }
                 
 
             default:

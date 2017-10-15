@@ -15,5 +15,6 @@ public class HumanPlayer : Player {
             default: this.team = TEAM.ZERO; break;
         }
     }
+    
 
 }

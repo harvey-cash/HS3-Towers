@@ -7,11 +7,18 @@ public class GameController : MonoBehaviour {
     private bool debug = true;
     GameObject unitFolder;
     BoardState board;
+
     private List<Cube> movedCubes;
     private List<Pyramid> movedPyramids;
+    private bool canPass = false;
+    public bool GetCanPass() { return canPass; }
+
+    private CameraController cameraController;
 
     void Start () {
         SetToDefaults();
+        cameraController = (Instantiate(Resources.Load("CameraRig")) as GameObject).GetComponent<CameraController>();
+        cameraController.transform.position = new Vector3((0.5f * boardDimensions.x) - 0.5f, 0, (0.5f * boardDimensions.y) - 0.5f);
         /* Create GUI and everything */
         BeginNewGame();        
 	}
@@ -30,7 +37,7 @@ public class GameController : MonoBehaviour {
         cubeTurns = 1;
         pyramidTurns = 1;
 
-        boardDimensions = new Vector2(7, 9);
+        boardDimensions = new Vector2(5, 5);
     }
     public bool ChangeSettings(List<Player.PLAYER_TYPES> playerTypes, Vector2 boardDimensions, int cubeCount, int pyramidCount) {
         this.playerTypes = playerTypes;
@@ -61,6 +68,7 @@ public class GameController : MonoBehaviour {
         Player[] players = new Player[playerTypes.Count];
         for (int i = 0; i < playerTypes.Count; i++) {
             players[i] = new HumanPlayer(i);
+            players[i].SetGameController(this);
         }
         return players;
     }
@@ -145,13 +153,24 @@ public class GameController : MonoBehaviour {
 
     /* ~~~~~~~~~~~~~~~~~~~~~ PLAY GAME ~~~~~~~~~~~~~~~~~~~~~ */
     private void PlayGame(BoardState board, Player[] players) {
-        
+        //something about calling the AI?
+        //or not?
+        //okay then
     }
+    
+    void Update() {
+        if (Input.GetKeyDown(KeyCode.E) && canPass) {
+            Debug.Log("RELEASE TO PASS TURN.");
+        }
+        if (Input.GetKeyUp(KeyCode.E) && canPass) {
+            PassTurn();
+        }
+    } 
 
     //ONLY PASS ALONG THE ACTIVE UNIT IN THE SELECTED GRID
     public void OnUnitClick(Unit unit) {
         if (board.GetSelectedUnit() == null) {
-            AttemptMove(unit.GetGrid().GetActiveUnit(), unit.GetGrid());
+            AttemptMove(unit.GetGrid().GetActiveUnit(board.GetTurnOf()), unit.GetGrid());
         } else {
             AttemptMove(board.GetSelectedUnit(), unit.GetGrid());
         }
@@ -165,6 +184,10 @@ public class GameController : MonoBehaviour {
     private void AttemptMove(Unit selectedUnit, Grid targetGrid) {
         //SELECTING A UNIT
         if (board.GetSelectedUnit() == null) {
+            if (selectedUnit == null) {
+                if(debug) { Debug.Log("You cannot move your opponent's pieces. Obviously."); }
+                return;
+            }
             if (selectedUnit.GetTeam().Equals(board.GetTurnOf())) {
                 if (debug) { Debug.Log("Selected unit: " + selectedUnit.GetGrid().GetCoords().ToString()); }
                 board = new BoardState(board.GetGrids(), board.GetTurnOf(), selectedUnit);
@@ -201,9 +224,14 @@ public class GameController : MonoBehaviour {
     }
 
     private void MoveUnitToGrid(Grid[,] gridArray, Unit selectedUnit, Grid targetGrid) {
+        /* In the scenario where a piece is on top of us,
+           we need to be able to throw them off. */
+        selectedUnit = selectedUnit.GetGrid().GetActiveUnit();
+
         /* CHECK CAN MOVE */
         if (!GetValidGrids(targetGrid).valid) {
             if (debug) { Debug.Log("Move is invalid!"); }
+            DeselectOccupants(selectedUnit.GetGrid());
             board = new BoardState(gridArray, board.GetTurnOf(), null);
             return;
         }
@@ -211,16 +239,18 @@ public class GameController : MonoBehaviour {
         /* CHECK UNIT TYPE ALLOWANCE */
         if (selectedUnit.GetUnitType().Equals(Unit.UNIT_TYPES.CUBE) && movedCubes.Count >= cubeTurns) {
             if(debug) { Debug.Log("You can't move any more cubes!"); }
+            DeselectOccupants(selectedUnit.GetGrid());
             board = new BoardState(gridArray, board.GetTurnOf(), null);
             targetGrid.DeselectColour();
             return;
         }
         if (selectedUnit.GetUnitType().Equals(Unit.UNIT_TYPES.PYRAMID) && movedPyramids.Count >= pyramidTurns) {
             if (debug) { Debug.Log("You can't move any more pyramids!"); }
+            DeselectOccupants(selectedUnit.GetGrid());
             board = new BoardState(gridArray, board.GetTurnOf(), null);
             targetGrid.DeselectColour();
             return;
-        }
+        }        
 
         gridArray = MoveOffGrid(gridArray, selectedUnit, targetGrid);
         Unit[] moreOccupants;
@@ -261,28 +291,52 @@ public class GameController : MonoBehaviour {
             movedPyramids.Add((Pyramid)selectedUnit);
         }
 
-        ChangeTurn(targetGrid, moreOccupants, selectedUnit, gridArray);
+        ChangeTurn(targetGrid, moreOccupants, selectedUnit);
+    }
+
+    public void SelectOccupants(Grid occupiedGrid) {
+        foreach (Unit unit in occupiedGrid.GetOccupants()) {
+            Player.TEAM team = unit.GetTeam();
+            unit.GetComponent<Renderer>().material.color = Player.TeamColour(team, true);
+        }
+    }
+    public void DeselectOccupants(Grid occupiedGrid) {
+        foreach (Unit unit in occupiedGrid.GetOccupants()) {
+            Player.TEAM team = unit.GetTeam();
+            unit.GetComponent<Renderer>().material.color = Player.TeamColour(team, false);
+        }
     }
     
-    private void ChangeTurn(Grid targetGrid, Unit[] moreOccupants, Unit selectedUnit, Grid[,] gridArray) {
+    private void ChangeTurn(Grid targetGrid, Unit[] moreOccupants, Unit selectedUnit) {
 
         bool noMoreMoves = (movedCubes.Count >= cubeTurns && movedPyramids.Count >= pyramidTurns);
         if (noMoreMoves) {
-            /* RESET MOVES */
-            movedCubes = new List<Cube>();
-            movedPyramids = new List<Pyramid>();
-
-            /* CHANGE TURN */
-            if (board.GetTurnOf() == Player.TEAM.ZERO) {
-                board = new BoardState(gridArray, Player.TEAM.ONE, null);
-            } else {
-                board = new BoardState(gridArray, Player.TEAM.ZERO, null); }
+            PassTurn();
         } else {
-            board = new BoardState(gridArray, board.GetTurnOf(), null);
+            // allow passing
+            canPass = true;
+            board = new BoardState(board.GetGrids(), board.GetTurnOf(), null);
+        }
+    }
+
+    public void PassTurn() {
+        /* RESET MOVES */
+        movedCubes = new List<Cube>();
+        movedPyramids = new List<Pyramid>();
+        // deny passing
+        canPass = false;
+
+        /* CHANGE TURN */
+        if (board.GetTurnOf() == Player.TEAM.ZERO) {
+            board = new BoardState(board.GetGrids(), Player.TEAM.ONE, null);
+        } else {
+            board = new BoardState(board.GetGrids(), Player.TEAM.ZERO, null);
         }
     }
 
     private Grid[,] MoveOffGrid(Grid[,] gridArray, Unit selectedUnit, Grid targetGrid) {
+        DeselectOccupants(selectedUnit.GetGrid());
+
         /* REMOVE UNIT FROM GRID */
         Unit[] fewerOccupants = new Unit[selectedUnit.GetGrid().GetOccupants().Length - 1];
         for (int i = 0; i < selectedUnit.GetGrid().GetOccupants().Length - 1; i++) {
@@ -329,6 +383,10 @@ public class GameController : MonoBehaviour {
 
         }
     }
+    
+    public Unit GetSelectedUnit() {
+        return board.GetSelectedUnit();
+    }
 }
 
 public class ValidGrids {
@@ -340,3 +398,6 @@ public class ValidGrids {
         this.validGrids = validGrids;
     }
 }
+
+
+
