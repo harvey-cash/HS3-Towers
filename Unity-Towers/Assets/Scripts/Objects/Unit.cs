@@ -27,15 +27,23 @@ public abstract class Unit : MonoBehaviour {
     }
 
     private void OnMouseEnter() {
-        foreach(Unit unit in occupiedGrid.GetOccupants()) {
-            unit.GetComponent<Renderer>().material.color = Player.TeamColour(team, true);
-        }
+        controller.SelectOccupants(occupiedGrid);
         
     }
     private void OnMouseExit() {
+        bool selected = false;
         foreach (Unit unit in occupiedGrid.GetOccupants()) {
-            unit.GetComponent<Renderer>().material.color = Player.TeamColour(team, false);
+            if (controller.GetSelectedUnit() != null && controller.GetSelectedUnit().Equals(unit)) {
+                selected = true;
+            }
         }
+
+        if(!selected) {
+            controller.DeselectOccupants(GetGrid());
+        }
+    }
+    public void DeselectColour() {
+        GetComponent<Renderer>().material.color = Player.TeamColour(team, false);
     }
 
     private void OnMouseUp() {

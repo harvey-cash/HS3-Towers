@@ -55,5 +55,14 @@ public class Grid : MonoBehaviour {
     public Unit GetActiveUnit() {
         if (occupants.Length > 0) { return occupants[occupants.Length - 1]; } else { return null; }
     }
+    public Unit GetActiveUnit(Player.TEAM team) {
+        Unit activeUnit = null;
+        for(int i = 0; i < occupants.Length; i++) {
+            if(occupants[i].GetTeam().Equals(team)) {
+                activeUnit = occupants[i];
+            }
+        }
+        return activeUnit;
+    }
 }
 
