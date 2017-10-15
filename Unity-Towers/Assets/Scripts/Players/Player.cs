@@ -42,4 +42,6 @@ public abstract class Player {
         }
     }
 
+    public abstract void RandomDelay(List<PotentialMove> moves);
+
 }

@@ -416,6 +416,14 @@ public class GameController : MonoBehaviour {
     public Unit GetSelectedUnit() {
         return board.GetSelectedUnit();
     }
+
+    public void RandomDelay(Player player, float min, float max, List<PotentialMove> moves) {
+        StartCoroutine(DelayRoutine(player, min, max, moves));
+    }
+    private IEnumerator DelayRoutine(Player player, float min, float max, List<PotentialMove> moves) {
+        yield return new WaitForSeconds(Random.Range(min, max));
+        player.RandomDelay(moves);
+    }
 }
 
 public class ValidGrids {

@@ -18,7 +18,8 @@ public class AIPlayer : Player {
         playerType = PLAYER_TYPES.AI;
     }
 
-    private const int MAX_ATTEMPTS = 5;
+    private const int MAX_ATTEMPTS = 20;
+    private float minWait = 1.0f, maxWait = 2.0f;
 
     private Vector2[] directions = {
         new Vector2(0, 1),
@@ -67,10 +68,14 @@ public class AIPlayer : Player {
             }
         }
 
-        
-        for(int i = 0; i < MAX_ATTEMPTS; i++) {
+
+        controller.RandomDelay(this, minWait, maxWait, potentialMoves);
+    }
+
+    public override void RandomDelay(List<PotentialMove> potentialMoves) {
+        for (int i = 0; i < MAX_ATTEMPTS; i++) {
             int index = Random.Range(0, potentialMoves.Count - 1);
-            if(controller.OnUnitClick(potentialMoves[index].unit) 
+            if (controller.OnUnitClick(potentialMoves[index].unit)
                 && controller.OnGridClick(potentialMoves[index].targetGrid)) {
                 return;
             }
