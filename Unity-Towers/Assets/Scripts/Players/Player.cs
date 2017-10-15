@@ -6,7 +6,7 @@ public abstract class Player {
 
     protected TEAM team;
     public TEAM GetTeam() { return team; }
-	public enum TEAM { ZERO, ONE };
+	public enum TEAM { GREEN, RED };
 
     protected PLAYER_TYPES playerType;
     public PLAYER_TYPES GetPlayerType() { return playerType; }
@@ -19,10 +19,10 @@ public abstract class Player {
 
     public static Color TeamColour(TEAM team, bool highlight) {
         switch(team) {
-            case TEAM.ZERO:
+            case TEAM.GREEN:
                 if(highlight) { return Color.red; }
                 else { return new Color(1, 0.4f, 0.4f, 1); }
-            case TEAM.ONE:
+            case TEAM.RED:
                 if (highlight) { return Color.green; } 
                 else { return new Color(0.4f, 1, 0.4f, 1); }
                 

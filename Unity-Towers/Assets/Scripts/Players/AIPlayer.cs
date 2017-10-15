@@ -10,10 +10,10 @@ public class AIPlayer : Player {
     }
     public AIPlayer(int team) {
         switch (team) {
-            case 0: this.team = TEAM.ZERO; break;
-            case 1: this.team = TEAM.ONE; break;
+            case 0: this.team = TEAM.GREEN; break;
+            case 1: this.team = TEAM.RED; break;
 
-            default: this.team = TEAM.ZERO; break;
+            default: this.team = TEAM.GREEN; break;
         }
         playerType = PLAYER_TYPES.AI;
     }
@@ -68,8 +68,22 @@ public class AIPlayer : Player {
             }
         }
 
-
-        controller.RandomDelay(this, minWait, maxWait, potentialMoves);
+        // if any of those are an enemy, take it
+        List<PotentialMove> enemies = new List<PotentialMove>();
+        foreach(PotentialMove move in potentialMoves) {
+            if(move.targetGrid.GetActiveUnit() != null 
+                && !move.targetGrid.GetActiveUnit().GetTeam().Equals(team)) {
+                enemies.Add(move);
+            }
+        }
+        if (enemies.Count > 0) {
+            controller.RandomDelay(this, minWait, maxWait, enemies);
+        } 
+        
+        // okay, no enemies in range, move toward one then
+        else {
+            controller.RandomDelay(this, minWait, maxWait, potentialMoves);
+        }
     }
 
     public override void RandomDelay(List<PotentialMove> potentialMoves) {

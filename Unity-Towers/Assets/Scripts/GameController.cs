@@ -39,7 +39,7 @@ public class GameController : MonoBehaviour {
         cubeTurns = 1;
         pyramidTurns = 1;
 
-        boardDimensions = new Vector2(5, 5);
+        boardDimensions = new Vector2(7, 7);
     }
     public bool ChangeSettings(List<Player.PLAYER_TYPES> playerTypes, Vector2 boardDimensions, int cubeCount, int pyramidCount) {
         this.playerTypes = playerTypes;
@@ -59,7 +59,7 @@ public class GameController : MonoBehaviour {
         Grid[,] grids = CreateGrids();
         grids = PopulateWithUnits(grids);
 
-        board = new BoardState(grids, Player.TEAM.ZERO, null);
+        board = new BoardState(grids, Player.TEAM.GREEN, null);
         movedCubes = new List<Cube>();
         movedPyramids = new List<Pyramid>();
 
@@ -105,22 +105,22 @@ public class GameController : MonoBehaviour {
         Unit[] occupants;
         for (int x = 1; x < end; x++) {
             occupants = new Unit[1];
-            occupants[0] = NewUnit(Unit.UNIT_TYPES.CUBE, Player.TEAM.ZERO, new Vector2(x, 0));
+            occupants[0] = NewUnit(Unit.UNIT_TYPES.CUBE, Player.TEAM.GREEN, new Vector2(x, 0));
             occupants[0].SetGrid(grids[x, 0]);
             grids[x, 0].SetOccupants(occupants);
 
             occupants = new Unit[1];
-            occupants[0] = NewUnit(Unit.UNIT_TYPES.PYRAMID, Player.TEAM.ZERO, new Vector2(x, 1));
+            occupants[0] = NewUnit(Unit.UNIT_TYPES.PYRAMID, Player.TEAM.GREEN, new Vector2(x, 1));
             occupants[0].SetGrid(grids[x, 1]);
             grids[x, 1].SetOccupants(occupants);
 
             occupants = new Unit[1];
-            occupants[0] = NewUnit(Unit.UNIT_TYPES.PYRAMID, Player.TEAM.ONE, new Vector2(x, otherSide - 1));
+            occupants[0] = NewUnit(Unit.UNIT_TYPES.PYRAMID, Player.TEAM.RED, new Vector2(x, otherSide - 1));
             occupants[0].SetGrid(grids[x, otherSide - 1]);
             grids[x, otherSide - 1].SetOccupants(occupants);
 
             occupants = new Unit[1];
-            occupants[0] = NewUnit(Unit.UNIT_TYPES.CUBE, Player.TEAM.ONE, new Vector2(x, otherSide));
+            occupants[0] = NewUnit(Unit.UNIT_TYPES.CUBE, Player.TEAM.RED, new Vector2(x, otherSide));
             occupants[0].SetGrid(grids[x, otherSide]);
             grids[x, otherSide].SetOccupants(occupants);
         }
@@ -198,7 +198,7 @@ public class GameController : MonoBehaviour {
                 return false;
             }
             if (selectedUnit.GetTeam().Equals(board.GetTurnOf())) {
-                if (debug) { Debug.Log("Selected unit: " + selectedUnit.GetGrid().GetCoords().ToString()); }
+                //if (debug) { Debug.Log("Selected unit: " + selectedUnit.GetGrid().GetCoords().ToString()); }
                 board = new BoardState(board.GetGrids(), board.GetTurnOf(), selectedUnit);
                 return true;
             }
@@ -303,7 +303,7 @@ public class GameController : MonoBehaviour {
             movedPyramids.Add((Pyramid)selectedUnit);
         }
 
-        ChangeTurn(targetGrid, moreOccupants, selectedUnit);
+        ChangeTurn(targetGrid, moreOccupants, selectedUnit);        
         return true;
     }
 
@@ -346,13 +346,15 @@ public class GameController : MonoBehaviour {
         canPass = false;
 
         /* CHANGE TURN */
-        if (board.GetTurnOf() == Player.TEAM.ZERO) {
-            board = new BoardState(board.GetGrids(), Player.TEAM.ONE, null);
+        if (board.GetTurnOf() == Player.TEAM.GREEN) {
+            board = new BoardState(board.GetGrids(), Player.TEAM.RED, null);
         } else {
-            board = new BoardState(board.GetGrids(), Player.TEAM.ZERO, null);
+            board = new BoardState(board.GetGrids(), Player.TEAM.GREEN, null);
         }
+        //move camera
+        //StartCoroutine(cameraController.ChangeTurn(board.GetTurnOf()));
 
-        foreach(Player player in players) {
+        foreach (Player player in players) {
             if(player.GetTeam().Equals(board.GetTurnOf()) 
                 && player.GetPlayerType().Equals(Player.PLAYER_TYPES.AI)) {
                 ((AIPlayer)player).MakeMove(board);

@@ -11,10 +11,10 @@ public class HumanPlayer : Player {
     }
     public HumanPlayer(int team) {
         switch (team) {
-            case 0: this.team = TEAM.ZERO; break;
-            case 1: this.team = TEAM.ONE; break;
+            case 0: this.team = TEAM.GREEN; break;
+            case 1: this.team = TEAM.RED; break;
 
-            default: this.team = TEAM.ZERO; break;
+            default: this.team = TEAM.GREEN; break;
         }
         playerType = PLAYER_TYPES.HUMAN;
     }
