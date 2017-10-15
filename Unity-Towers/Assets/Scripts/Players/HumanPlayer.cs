@@ -6,6 +6,7 @@ public class HumanPlayer : Player {
 
     public HumanPlayer(TEAM team) {
         this.team = team;
+        playerType = PLAYER_TYPES.HUMAN;
     }
     public HumanPlayer(int team) {
         switch (team) {
@@ -14,6 +15,7 @@ public class HumanPlayer : Player {
 
             default: this.team = TEAM.ZERO; break;
         }
+        playerType = PLAYER_TYPES.HUMAN;
     }
     
 

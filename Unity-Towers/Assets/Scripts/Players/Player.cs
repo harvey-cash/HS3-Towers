@@ -5,8 +5,12 @@ using UnityEngine;
 public abstract class Player {
 
     protected TEAM team;
+    public TEAM GetTeam() { return team; }
 	public enum TEAM { ZERO, ONE };
-    public enum PLAYER_TYPES { HUMAN };
+
+    protected PLAYER_TYPES playerType;
+    public PLAYER_TYPES GetPlayerType() { return playerType; }
+    public enum PLAYER_TYPES { HUMAN, AI };
 
     protected GameController controller;
     public void SetGameController(GameController controller) {
@@ -32,6 +36,7 @@ public abstract class Player {
     public static Player NewPlayer(PLAYER_TYPES type, TEAM team) {
         switch (type) {
             case PLAYER_TYPES.HUMAN: return new HumanPlayer(team);
+            case PLAYER_TYPES.AI: return new AIPlayer(team);
 
             default: return new HumanPlayer(team);
         }
